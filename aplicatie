@@ -1,0 +1,888 @@
+#include <iostream>
+#include <stdio.h>
+#include <string.h>
+#include <cmath>
+#include <cctype>
+
+using namespace std;
+class Zboruri {
+public:
+    string imbarcare;
+    string debarcare;
+    string firma;
+    int locuri;
+    int durata_ora;
+    int durata_minute;
+    int an;
+    int luna;
+    int zi;
+    int ora;
+    int minut;
+    int cod;
+
+    Zboruri();
+    Zboruri(int c,string imb, string deb, string f, int loc, int d_o, int d_m, int a, int l, int z, int o, int m);    
+
+    int ad_Zboruri( int c, string imb, string deb, string f, int loc, int d_o, int d_m,  int a, int l, int z, int o, int m) {
+       
+        if (o > 23 || o < 0) throw "\nFormat ora de plecare gresit...\n";
+        if (m > 59 || m < 0) throw "\nFormat minut de plecare gresit...\n";
+        if (z > 31 || z < 0) throw "\nFormat zi de plecare gresit...\n";
+        if (l > 12 || l < 0) throw "\nFormat luna de plecare gresit...\n";
+        if (a < 2020) throw "\nData in trecut\n";
+        if(a > 2022) throw "\nFormat an de plecare gresit...\n";
+        if (l == 2 && z > 28) throw "\nFormat zi gresit...\nFebruarie nu are mai mult de 28 zile!\n";
+        if (l == 4 || l == 6 || l == 9 || l == 11)
+            if (z > 30) throw "\nFormat zi gresit...\n";
+        if (a < 2021 && l < 12 && z < 6) throw "\nData in trecut...\n";
+        if (imb == deb) throw "\nAti introdus acelasi oras si la imbarcare si la debarcare...\n";
+        int n1, n2,i,ok1,ok2;
+        ok1 = 0;
+        ok2 = 0;
+        n1 = imb.length();
+        n2 = deb.length();
+        for (i = 0; i < n1; i++)
+            if (imb[i] < 65 || imb[i] > 122)
+                throw"\nNumele localitatii de imbarcare contine alte caractere in afara de litere\n";
+        for (i = 0; i < n2; i++)
+            if (deb[i] < 65 || deb[i] > 122)
+                throw"\nNumele localitatii de debarcare contine alte caractere in afara de litere\n";
+
+        this->cod = c;
+        this->imbarcare = imb;
+        this->debarcare = deb;        
+        this->firma = f;
+        this->locuri = loc;
+        this->durata_ora = d_o;
+        this->durata_minute = d_m;
+        this->an = a;
+        this->luna = l;
+        this->zi = z;
+        this->ora = o;
+        this->minut = m;
+       
+       return 1;        
+    }    
+};
+
+Zboruri::Zboruri()
+{
+}
+
+Zboruri::Zboruri(int c,string imb, string deb, string f, int d_o, int d_m,  int loc, int a, int l, int z, int o, int m) {
+    imbarcare = imb;
+    debarcare = deb;
+    firma = f;
+    locuri = loc;
+    durata_ora = d_o;
+    durata_minute = d_m;
+    an = a;
+    luna = l;
+    zi = z;
+    ora = o;
+    minut = m;
+    cod = c;
+}
+
+int creare_cont(string username, string p1, string p2) {
+    int nr,i,c,l,k1,k2;
+    k1 = 0;
+    k2 = 0;
+    bool lit_mica, lit_mare, caracter_special, cifra;
+    lit_mica = false;
+    lit_mare = false;
+    caracter_special = false;
+    cifra = false;
+    nr = p1.length();
+    l = username.length();
+    c = 0;
+    int r1, r2;
+    r1 = 0;
+    r2 = 0;
+    if (username.length() < 4) throw"\nNume de utilizator prea scurt\n";
+    for (i = 0; i < l; i++)
+    {
+        if (username[i] == '@')
+        {
+            r1++;
+            k1 = i;
+
+        }
+        if (username[i] == '.')
+        {
+            r2++;
+            k2 = i;
+        }
+    }
+    if (r1 == 0 && r2 == 0) throw "\nFormat email gresit(adresa de email nu contine @ sau .)\n";
+    if (k1 > k2) throw"\nFormat email gresit(ati pus @ dupa ultimul .)\n";
+    if (r1 > 1) throw"\nFormat email gresit(ati pus prea multe @)\n";
+    if (p1.length() < 8) throw"\nParola prea scurta\n";
+    if (p1 != p2) throw"\nParola repetata nu e corecta\n";
+    for (i = 0; i < nr; i++)
+    {
+        if (isupper(p1[i])) lit_mare = true;
+        if(islower(p1[i]))  lit_mica=true;
+        if(isdigit(p1[i])) cifra=true;
+        if (!isalpha(p1[i]) && !isdigit(p1[i])) caracter_special = true;
+    }
+    if (lit_mare == false || lit_mica == false || caracter_special == false || cifra == false)
+    {
+        throw"\nParola prea slaba";        
+    }
+    
+    return 1;
+    
+}
+
+void afisare_Zbor(Zboruri z) {
+    cout << "Cod: " << z.cod << "\n";
+    cout << "Localitatea de imbarcare: " << z.imbarcare << "\n";
+    cout << "Localitatea de debarcare: " << z.debarcare << "\n";
+    cout << "Firma: " << z.firma << "\n";
+    cout << "Durata zbor: " << z.durata_ora << ":" << z.durata_minute << "\n";
+    cout << "Data: " << z.ora << ":" << z.minut << " " << z.zi << "/" << z.luna << "/" << z.an << "\n";
+    cout << z.locuri << " locuri disponibile\n";
+
+}
+
+int rezervare_zbor(Zboruri z[], int alegere, int nr_zboruri, int locuri_rezervate) {
+
+    if (alegere<1 && alegere>nr_zboruri)
+        throw "Alegeti un zbor existent\n";
+    if (locuri_rezervate > 8)
+        throw "Va rugam rezervati maxim 8 locuri\n";
+    z[alegere-1].locuri = z[alegere-1].locuri - locuri_rezervate;
+    cout << "Ati rezervat zborul cu succes\n";
+    return 1;
+}
+
+int cautare_zbor(Zboruri z[], int nr, string imb, string deb) {
+    int i,ok;
+    ok = 0;
+    for (i = 0; i < nr; i++)
+        if (z[i].imbarcare == imb && z[i].debarcare == deb)
+        {
+            afisare_Zbor(z[i]);
+            ok++;
+        }
+    if (ok != 0) return 1;
+
+    
+    throw"Nu exista niciun zbor cu aceste detalii\n";
+    
+}
+int cautare_zbor(Zboruri z[], int nr, string firma) {
+    int i,ok;
+    ok = 0;
+    for (i = 0; i < nr; i++)
+        if (z[i].firma == firma)
+        {
+            afisare_Zbor(z[i]);
+            ok++;
+        }
+    if (ok != 0) return 1;
+   
+    throw"Nu exista niciun zbor cu aceste detalii\n";
+}
+int cautare_zbor(Zboruri z[], int nr, int zi, int luna, int an) {
+    int i,ok;
+    ok = 0;
+    for (i = 0; i < nr; i++)
+        if (z[i].zi == zi && z[i].luna == luna && z[i].an == an)
+        {
+            afisare_Zbor(z[i]);
+            ok++;
+        }
+    if (ok != 0) return 1;
+
+    throw"Nu exista niciun zbor cu aceste detalii\n";
+}
+
+class Utilizator {
+public:
+    string nume_Utilizator;
+    string parola;
+    int cod;
+    Utilizator();
+
+    Utilizator(string username, string password);
+    int login(Utilizator c[],string u, string p,int k) {
+        int i;
+        i = 0;        
+        while (i < k) {            
+            if (c[i].nume_Utilizator == u && c[i].parola == p)
+                return 1;
+            i++;
+        }
+        throw "\nNume utilizator sau parola introduse gresit!\n";
+    }
+};
+
+Utilizator::Utilizator() {
+
+}
+
+Utilizator::Utilizator(string username, string password){
+        nume_Utilizator = username;
+        parola = password;
+}
+
+int exista(Zboruri k[], string imb, string deb, string f, int loc, int d_o, int d_m, int a, int l, int z, int o, int m,int c)
+{
+    int i;
+    for (i = 0; i < c; i++)
+
+    {
+        if (k[i].imbarcare == imb) 
+        if (k[i].debarcare == deb)
+        if (k[i].firma == f)
+        if (k[i].locuri = loc)
+        if (k[i].durata_ora == d_o)
+        if (k[i].durata_minute == d_m)
+        if (k[i].an == a)
+        if (k[i].luna == l)
+        if (k[i].zi == z)
+        if (k[i].ora == o)
+        if(k[i].minut==m)
+           throw "\nZborul exista.Introduceti alte detalii!\n";
+        
+    }
+    return 0;
+}
+
+class Operator {
+public:
+    string nume_Utilizator;
+    string parola;
+    Operator();
+
+    Operator(string username, string password) {
+        nume_Utilizator = username;
+        parola = password;
+    }
+    
+    int ver_Operator(string u, string p) {
+
+        if (u == "Alin")
+            if (p == "Tufeni") return 1;
+        if (u == "Micu")
+            if (p == "Drajna") return 1;
+        if (u == "Dobrov")
+            if (p == "Zmeurica") return 1;
+        if (u == "Cono")
+            if (p == "Mioveni") return 1;
+        if (u == "Vlad")
+            if (p == "Topoloveni") return 1;
+
+        cout << "\nIntroduceti un ID corect(Username sau Parola incorecte)!\n";
+        return 0;
+
+
+    }
+
+
+};
+
+int login_Operator(string u, string p) {
+
+        if (u == "gheorghe@yahoo.com")
+            if (p == "Tufeni123*") return 1;
+        if (u == "vasile@gmail.com")
+            if (p == "Drajna2000@") return 2;
+        if (u == "ionion@yahoo.ro")
+            if (p == "Ravrav4$") return 3;
+        
+        throw "\nUsername sau Parola incorecte!\nIntroduceti din nou datele de logare, cu atentie la capslock.\n";
+}
+
+
+int main() {
+    Zboruri zbor[100];
+    zbor[0].cod = 1;
+    zbor[0].imbarcare = "Bucuresti";
+    zbor[0].debarcare = "Paris";
+    zbor[0].firma = "Tarom";
+    zbor[0].locuri = 300;
+    zbor[0].durata_ora = 2;
+    zbor[0].durata_minute = 0;
+    zbor[0].an = 2020;
+    zbor[0].luna = 12;
+    zbor[0].zi = 20;
+    zbor[0].ora = 19;
+    zbor[0].minut = 0;
+    zbor[1].cod = 2;
+    zbor[1].imbarcare = "Cluj";
+    zbor[1].debarcare = "Barcelona";
+    zbor[1].firma = "WizzAir";
+    zbor[1].locuri = 200;
+    zbor[1].durata_ora = 2;
+    zbor[1].durata_minute = 30;
+    zbor[1].an = 2021;
+    zbor[1].luna = 1;
+    zbor[1].zi = 15;
+    zbor[1].ora = 14;
+    zbor[1].minut = 0;
+    zbor[2].cod = 3;
+    zbor[2].imbarcare = "Barcelona";
+    zbor[2].debarcare = "Cluj";
+    zbor[2].firma = "BlueAir";
+    zbor[2].locuri = 200;
+    zbor[2].durata_ora = 2;
+    zbor[2].durata_minute = 30;
+    zbor[2].an = 2021;
+    zbor[2].luna = 2;
+    zbor[2].zi = 3;
+    zbor[2].ora = 13;
+    zbor[2].minut = 1;
+    zbor[3].cod = 4;
+    zbor[3].imbarcare = "Budapesta";
+    zbor[3].debarcare = "Londra";
+    zbor[3].firma = "Tarom";
+    zbor[3].locuri = 250;
+    zbor[3].durata_ora = 2;
+    zbor[3].durata_minute = 30;
+    zbor[3].an = 2020;
+    zbor[3].luna = 12;
+    zbor[3].zi = 22;
+    zbor[3].ora = 0;
+    zbor[3].minut = 0;
+
+    int i = 4;
+
+    Operator op1("gheorghe@yahoo.com", "Tufeni123*");
+    Operator op2("vasile@gmail.com", "Drajna2000@");
+    Operator op3("ionion@yahoo.ro", "Ravrav4$");
+
+    Utilizator conturi[100];
+    conturi[0].nume_Utilizator = "georgianaA_FR@yahoo.com";
+    conturi[0].parola = "Georgi19<3";
+    conturi[0].cod = 0;
+    conturi[1].nume_Utilizator = "oana123@gmail.com";
+    conturi[1].parola = "Crai890*";
+    conturi[1].cod = 1;
+    conturi[2].nume_Utilizator = "bianca@yahoo.ro";
+    conturi[2].parola = "Miomio123$";
+    conturi[2].cod = 2;
+    int nr_conturi;
+    nr_conturi = 3;
+    int c;
+    c = 1;
+    while (c == 1) {
+        cout << "\nAlegeti statutul persoanei\n1.Operator\n2.Utilizator\n3.Iesire\n\n";
+        char statut;
+        cin >> statut;
+
+        while (statut != '1' && statut != '2' && statut != '3') {
+            cout << "\nIntroduceti o optiune valida!\n";
+            cin >> statut;
+        }
+
+        switch (statut)
+        {
+        case '1'://Operator
+        {cout << "\nIntroduceti numele de utilizator si parola\nUsername: ";
+        string username, password;
+        cin >> username;
+        cout << "\nParola: ";
+        cin >> password;
+        int k;
+        k = 0;
+        while (k == 0) {
+            int w;
+            try {
+                w = login_Operator(username, password);
+                if (w == 1 || w == 2 || w == 3 || w == 4 || w == 5) k = 1;
+            }
+            catch (const char* msg) {
+                cout << msg;
+                cout << "Username: ";
+                cin >> username;
+                cout << "\nPassword: ";
+                cin >> password;
+            }
+        }
+        int v;
+        v = login_Operator(username, password);
+        cout << "\nLogare reusita!\n\n";
+        int ab;
+        ab = 1;
+        while (ab == 1) {
+            cout << "\n-------Meniu OPERATOR-------\n\nOptiuni:\n1.Adaugare zbor\n2.Stergere zbor\n3.Afisare zboruri\n4.Inapoi\n\nAlegeti numarul optiunii: ";
+            int o;
+            cin >> o;
+
+            switch (o)
+            {
+            case 1: { cout << "\nIntroduceti localitatea de imbarcare: ";
+                string imbarcare;
+                cin >> imbarcare;
+                cout << "\nIntroduceti localitatea de debarcarea: ";
+                string debarcare;
+                cin >> debarcare;
+                cout << "\nIntroduceti firma cu care zburati: ";
+                string firma;
+                cin >> firma;
+                cout << "\nIntroduceti numarul de locuri disponibile initial: ";
+                int locuri;
+                cin >> locuri;
+                cout << "\nIntroduceti durata zborurlui.\nore=";
+                int durata_ore, durata_minute;
+                cin >> durata_ore;
+                cout << "\nminute=";
+                cin >> durata_minute;
+                cout << "\nIntroduceti anul zborului: ";
+                int an;
+                cin >> an;
+                cout << "\nIntroduceti luna zborului: ";
+                int luna;
+                cin >> luna;
+                cout << "\nIntroduceti ziua zborului: ";
+                int zi;
+                cin >> zi;
+                cout << "\nIntroduceti ora zborului: ";
+                int ora;
+                cin >> ora;
+                cout << "\nIntroduceti minutul zborului: ";
+                int minut;
+                cin >> minut;
+                int ok;
+                ok = 0;
+                while (ok == 0) {
+
+                    try {
+                        if (v == 1) {
+                            try {
+                                int x;
+                                x = exista(zbor, imbarcare, debarcare, firma, locuri, durata_ore, durata_minute, an, luna, zi, ora, minut, i);
+                                zbor[i].ad_Zboruri(i + 1, imbarcare, debarcare, firma, locuri, durata_ore, durata_minute, an, luna, zi, ora, minut);
+                                i++;
+
+                            }
+                            catch (const char* msg) {
+                                cout << msg;
+                                cout << "\nTastati din nou detaliile zborului pe care vreti sa il adaugati!\n";
+                                cout << "\nIntroduceti localitatea de imbarcare: ";
+                                string imbarcare;
+                                cin >> imbarcare;
+                                cout << "\nIntroduceti localitatea de debarcarea: ";
+                                string debarcare;
+                                cin >> debarcare;
+                                cout << "\nIntroduceti firma cu care zburati: ";
+                                string firma;
+                                cin >> firma;
+                                cout << "\nIntroduceti numarul de locuri disponibile initial: ";
+                                int locuri;
+                                cin >> locuri;
+                                cout << "\nIntroduceti durata zborurlui.\nore=";
+                                int durata_ore, durata_minute;
+                                cin >> durata_ore;
+                                cout << "\nminute=";
+                                cin >> durata_minute;
+                                cout << "\nIntroduceti anul zborului: ";
+                                int an;
+                                cin >> an;
+                                cout << "\nIntroduceti luna zborului: ";
+                                int luna;
+                                cin >> luna;
+                                cout << "\nIntroduceti ziua zborului: ";
+                                int zi;
+                                cin >> zi;
+                                cout << "\nIntroduceti ora zborului: ";
+                                int ora;
+                                cin >> ora;
+                                cout << "\nIntroduceti minutul zborului: ";
+                                int minut;
+                                cin >> minut;
+                            }
+
+                        }
+                        if (v == 2) {
+                            try {
+                                int x;
+                                x = exista(zbor, imbarcare, debarcare, firma, locuri, durata_ore, durata_minute, an, luna, zi, ora, minut, i);
+                                zbor[i].ad_Zboruri(i + 1, imbarcare, debarcare, firma, locuri, durata_ore, durata_minute, an, luna, zi, ora, minut);
+                                i++;
+
+                            }
+                            catch (const char* msg) {
+                                cout << msg;
+                                cout << "\nTastati din nou detaliile zborului pe care vreti sa il adaugati!\n";
+                                cout << "\nIntroduceti localitatea de imbarcare: ";
+                                string imbarcare;
+                                cin >> imbarcare;
+                                cout << "\nIntroduceti localitatea de debarcarea: ";
+                                string debarcare;
+                                cin >> debarcare;
+                                cout << "\nIntroduceti firma cu care zburati: ";
+                                string firma;
+                                cin >> firma;
+                                cout << "\nIntroduceti numarul de locuri disponibile initial: ";
+                                int locuri;
+                                cin >> locuri;
+                                cout << "\nIntroduceti durata zborurlui.\nore=";
+                                int durata_ore, durata_minute;
+                                cin >> durata_ore;
+                                cout << "\nminute=";
+                                cin >> durata_minute;
+                                cout << "\nIntroduceti anul zborului: ";
+                                int an;
+                                cin >> an;
+                                cout << "\nIntroduceti luna zborului: ";
+                                int luna;
+                                cin >> luna;
+                                cout << "\nIntroduceti ziua zborului: ";
+                                int zi;
+                                cin >> zi;
+                                cout << "\nIntroduceti ora zborului: ";
+                                int ora;
+                                cin >> ora;
+                                cout << "\nIntroduceti minutul zborului: ";
+                                int minut;
+                                cin >> minut;
+                            }
+                        }
+                        if (v == 3) {
+                            try {
+                                int x;
+                                x = exista(zbor, imbarcare, debarcare, firma, locuri, durata_ore, durata_minute, an, luna, zi, ora, minut, i);
+                                zbor[i].ad_Zboruri(i + 1, imbarcare, debarcare, firma, locuri, durata_ore, durata_minute, an, luna, zi, ora, minut);
+                                i++;
+
+                            }
+                            catch (const char* msg) {
+                                cout << msg;
+                                cout << "\nTastati din nou detaliile zborului pe care vreti sa il adaugati!\n";
+                                cout << "\nIntroduceti localitatea de imbarcare: ";
+                                string imbarcare;
+                                cin >> imbarcare;
+                                cout << "\nIntroduceti localitatea de debarcarea: ";
+                                string debarcare;
+                                cin >> debarcare;
+                                cout << "\nIntroduceti firma cu care zburati: ";
+                                string firma;
+                                cin >> firma;
+                                cout << "\nIntroduceti numarul de locuri disponibile initial: ";
+                                int locuri;
+                                cin >> locuri;
+                                cout << "\nIntroduceti durata zborurlui.\nore=";
+                                int durata_ore, durata_minute;
+                                cin >> durata_ore;
+                                cout << "\nminute=";
+                                cin >> durata_minute;
+                                cout << "\nIntroduceti anul zborului: ";
+                                int an;
+                                cin >> an;
+                                cout << "\nIntroduceti luna zborului: ";
+                                int luna;
+                                cin >> luna;
+                                cout << "\nIntroduceti ziua zborului: ";
+                                int zi;
+                                cin >> zi;
+                                cout << "\nIntroduceti ora zborului: ";
+                                int ora;
+                                cin >> ora;
+                                cout << "\nIntroduceti minutul zborului: ";
+                                int minut;
+                                cin >> minut;
+                            }
+                        }                       
+                        ok = 1;
+                    }
+                    catch (const char* msg) {
+                        cout << msg;
+
+
+                    }
+                }
+            }
+                  break;
+            case 2://Stergere
+            {cout << "\nLista tuturor zborurilor din baza de date:\n";
+            int j;
+            for (j = 0; j < i; j++) {
+                afisare_Zbor(zbor[j]);
+                cout << "\n";
+            }
+            cout << "\nAlegeti codul zborului pe care vreti sa il stergeti!\n";
+            int pozitie;
+            cin >> pozitie;
+            while (pozitie<1 && pozitie>i)
+            {
+                cout << "Cod zbor inexistent. Alegeti un cod intre 1 si " << i << ".\n";
+                cin >> pozitie;
+            }
+            for (j = pozitie - 1; j < i - 1; j++)
+                zbor[j] = zbor[j + 1];
+            i--;
+            for (j = 0; j < i; j++)
+                zbor[j].cod = j + 1;
+
+            cout << "\nNoua lista de zboruri din baza de date dupa stergerea zborului este:\n";
+            for (j = 0; j < i; j++) {
+                afisare_Zbor(zbor[j]);
+                cout << "\n";
+            }
+            }
+
+            break;
+            case 3://Afisare
+            {
+                int j;
+                for (j = 0; j < i; j++) {
+                    afisare_Zbor(zbor[j]);
+                    cout << "\n";
+                }
+            }
+            break;
+            case 4: ab = 0;
+                break;//ies din meniu
+            }
+        }
+        }
+        break;
+
+
+        case '2': //Utilizator
+        {string u, p;
+        int t, j;
+        t = 1;
+        while (t == 1) {
+            cout << "\n-------Optiuni-------\n\na.Login\nb.Creare cont\nc.Inapoi\n\nAlegeti litera optiunii: ";
+            char optiune;
+            cin >> optiune;
+            while (optiune != 'a' && optiune != 'b' && optiune != 'c')
+            {
+                cout << "Introduceti o optiune valida!";
+                cin >> optiune;
+            }
+            switch (optiune)
+            {
+            case 'a'://Login
+            {cout << "Introduceti detaliile contului\nUsername: ";
+            cin >> u;
+            cout << "\nPassword: ";
+            cin >> p;
+            int xy;
+            xy = 0;
+            j = 0;
+            int l;
+            l = 0;
+            while (xy == 0) {
+                try {
+                    l = conturi[j].login(conturi, u, p, nr_conturi);
+                    if (l == 1) xy = 1;
+                }
+                catch (const char* msg) {
+                    cout << msg;
+                    l = 0;
+                    cout << "Username: ";
+                    cin >> u;
+                    cout << "\nPassword: ";
+                    cin >> p;
+                }
+
+            }
+            cout << "Login reusit!\n\n\n";
+            int comutator;
+            comutator = 1;
+
+            while (comutator == 1) {
+                cout << "\n\n-------Meniu UTILIZATOR-------\n\n1.Cautare zbor\n2.Rezervare zbor\n3.Inapoi\n\nAlegeti numarul optiunii: ";
+                char caracter1;
+                cin >> caracter1;
+                while (caracter1 != '1' && caracter1 != '2' && caracter1 != '3') {
+                    cout << "Introduceti o optiune valida!\n";
+                    cout << "Alegeti numarul optiunii: ";
+                    cin >> caracter1;
+                }
+                int comutator3, functie, comutator4;
+                comutator3 = 0;
+                comutator4 = 0;
+
+                switch (caracter1)
+                {
+                case '1'://cautare zbor
+                {
+                    int sem = 0;
+                    while (sem == 0) {
+                        cout << "-------CAUTARI-------\n\n1.Cautare dupa localitatea de imbarcare si cea de debarcare\n2.Cautare dupa firma\n3.Cautare dupa data\n4.Inapoi\n";
+                        cout << "\nTastati numarul aferent optiunii: ";
+                        char number;
+                        cin >> number;
+                        while (number != '1' && number != '2' && number != '3' && number != '4')
+                        {
+                            cout << "Optiune gresita!\nTastati numarul aferent optiunii: ";
+                            cin >> number;
+                        }
+
+                        string imb, deb, firma;
+                        int zi, luna, an;
+
+                        switch (number) {
+                        case '1': {
+
+                            cout << "Introduceti localitatea de imbarcare: ";
+                            cin >> imb;
+                            cout << "Introduceti localitatea de debarcare: ";
+                            cin >> deb;
+                            try {
+                                functie = cautare_zbor(zbor, i, imb, deb);
+                                if (functie == 1) sem = 1;
+
+                            }
+                            catch (const char* msg) {
+                                cout << msg;
+                                cout << "Introduceti localitatea de imbarcare: ";
+                                cin >> imb;
+                                cout << "Introduceti localitatea de debarcare: ";
+                                cin >> deb;
+                            }
+                        }
+                                break;
+
+
+                        case '2':
+                        {
+                            cout << "Introduceti firma: ";
+                            cin >> firma;
+                            try {
+                                functie = cautare_zbor(zbor, i, firma);
+                                if (functie == 1) sem = 1;
+
+                            }
+                            catch (const char* msg) {
+                                cout << msg;
+                                cout << "Introduceti firma: ";
+                                cin >> firma;
+
+                            }
+                        }
+                        break;
+
+                        case '3':
+                        {
+                            cout << "\nIntroduceti data zborului\nzi= ";
+                            cin >> zi;
+                            cout << "\nluna= ";
+                            cin >> luna;
+                            cout << "\nan= ";
+                            cin >> an;
+                            try {
+                                functie = cautare_zbor(zbor, i, zi, luna, an);
+                                if (functie == 1) sem = 1;
+                            }
+                            catch (const char* msg) {
+                                cout << msg;
+                                cout << "\nIntroduceti data zborului\nzi= ";
+                                cin >> zi;
+                                cout << "\nluna= ";
+                                cin >> luna;
+                                cout << "\nan= ";
+                                cin >> an;
+                            }
+                        }
+                        break;
+
+                        case '4':
+                        {
+                            sem = 1;
+                        }
+                        //break;
+                        }
+
+                    }
+                }
+                break;
+
+                case'2' ://Rezervare zbor                    
+                {cout << "Pentru a rezerva un zbor, alegeti codul unuia din zborurile de mai jos:\n";
+                    int j;
+
+                    for (j = 0; j < i; j++) {
+                        afisare_Zbor(zbor[j]);
+                        cout << "\n";
+                    }
+                    cout << "\n\nTastati codul zborului si cate locuri vreti sa rezervati\ncod= ";
+                    int code, locuri_rez;
+                    cin >> code;
+                    cout << "\nlocuri de rezervat= ";
+                    cin >> locuri_rez;
+                    try {
+                        int variabila;
+                        variabila = rezervare_zbor(zbor, code, i, locuri_rez);
+
+                    }
+                    catch (const char* msg) {
+                        cout << msg;
+                        cout << "\nTastati codul zborului si cate locuri vreti sa rezervati\ncod= ";
+                        int code, locuri_rez;
+                        cin >> code;
+                        cout << "\nlocuri de rezervat= ";
+                        cin >> locuri_rez;
+
+                    }
+                    for (j = 0; j < i; j++) {
+                        afisare_Zbor(zbor[j]);
+                        cout << "\n";
+                    }
+                }
+                    break;
+
+                case '3'://inapoi
+                    comutator = 0;
+                    break;
+                }                
+            }
+            break;
+            case 'b'://Creare cont SA NU UIT SA MARESC NR CONTURI NEAPARAT
+            {   string username, password1,password2;
+                
+                int vadim,marean;
+                marean = 1;
+                while (marean == 1) {
+                    cout << "Introduceti detaliile necesare\nnume utilizator= ";
+                    cin >> username;
+                    cout << "\nparola= ";
+                    cin >> password1;
+                    cout << "Pentru o verificare cat mai buna introduceti parola inca o data\nparola= ";
+                    cin >> password2;
+                    try
+                    {
+                        vadim = creare_cont(username, password1, password2);
+                        if (vadim == 1) {
+                            conturi[nr_conturi].nume_Utilizator = username;
+                            conturi[nr_conturi].parola = password1;
+                            conturi[nr_conturi].cod = nr_conturi;
+                            nr_conturi++;
+                            marean = 0;
+                            cout << "\nCont creat cu succes\n";
+                        }
+                    }
+                    catch (const char* msg) {
+                        cout << msg;
+                        cout << "Introduceti detaliile necesare\nnume utilizator= ";
+                        cin >> username;
+                        cout << "\nparola= ";
+                        cin >> password1;
+                        cout << "Pentru o verificare cat mai buna introduceti parola inca o data\nparola= ";
+                        cin >> password2;
+                    }
+                }
+            }
+                break;
+
+            case 'c'://Iesire
+                t = 0;
+                break;
+            }
+            }
+        }
+        break;
+
+        }
+        case '3': c = 0;
+            break;
+        } 
+    }
+}
